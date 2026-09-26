@@ -1,0 +1,107 @@
+{
+  "io": {
+    "input_folder_path": "folder",
+    "sample_rate": 44100,
+    "export_format": "m4a"
+  },
+  "language": {
+    "multilingual": true,
+    "supported": [
+      "bn",
+      "hi",
+      "ta",
+      "te",
+      "kn",
+      "ml",
+      "mr",
+      "gu",
+      "pa",
+      "ur",
+      "or",
+      "as"
+    ],
+    "detect_threshold_multilingual": 0.0,
+    "detect_threshold_single": 0.0
+  },
+  "runtime": {
+    "batch_size": 1,
+    "global_size": 1,
+    "local_index": 0,
+    "max_audio_hours": 5.0
+  },
+  "segmentation": {
+    "merge_gap": 2.0,
+    "min_segment_length": 0.5,
+    "max_segment_length": 30.0
+  },
+  "long_chunk": {
+    "enabled": true,
+    "max_gap_s": 2.0,
+    "min_duration_s": 30.0,
+    "min_mean_dnsmos": 2.4,
+    "max_fake_coverage": null
+  },
+  "filter": {
+    "min_duration": 0.5,
+    "max_duration": 30.0,
+    "min_quality": 2.4,
+    "min_char_count": 2,
+    "drop_fake_zh_en": false
+  },
+  "stages": {
+    "separator": {
+      "name": "mel_band_roformer_kim_ft3",
+      "params": {
+        "model_filename": "mel_band_roformer_kim_ft3_unwa.ckpt",
+        "model_file_dir": "",
+        "normalization_threshold": 0.9,
+        "use_autocast": false
+      }
+    },
+    "diarizer": {
+      "name": "diarizen",
+      "params": {
+        "model": "BUT-FIT/diarizen-wavlm-large-s80-md-v2",
+        "cache_dir": ""
+      }
+    },
+    "vad": {
+      "name": "firered_vad",
+      "params": {
+        "source_dir": "third_party/FireRedASR2S",
+        "model_dir": "",
+        "max_speech_frame": 3000,
+        "merge_silence_frame": 0
+      }
+    },
+    "lid": {
+      "name": "firered_lid",
+      "params": {
+        "source_dir": "third_party/FireRedASR2S",
+        "model_dir": "",
+        "use_half": false
+      }
+    },
+    "asr": {
+      "name": "indic_conformer",
+      "params": {
+        "model_path": "ai4bharat/indic-conformer-600m-multilingual",
+        "decoder_type": "ctc",
+        "default_language": "bn",
+        "skip_languages": [],
+        "raise_on_segment_error": false
+      }
+    },
+    "scorer": {
+      "name": "dnsmos",
+      "params": {
+        "model_path": "sig_bak_ovr.onnx"
+      }
+    },
+    "deepfake": null
+  },
+  "dialogue_window": {
+    "enabled": true,
+    "max_fake_coverage": null
+  }
+}

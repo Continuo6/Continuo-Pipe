@@ -1,0 +1,3 @@
+# Separate from expressive-tags: these require different Transformers versions.
+-r ../expressive_annotation/requirements/caption.txt
+vllm>=0.24

@@ -1,0 +1,2 @@
+# Install Torch and torchaudio matching the host CUDA first.
+-r ../expressive_annotation/requirements/annotate.txt

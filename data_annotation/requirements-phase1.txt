@@ -1,0 +1,84 @@
+# Phase 1 dependency lockfile (main.py).
+#
+# Stage map:
+#   standardization → pydub + ffmpeg
+#   separator       → mel_band_roformer_kim_ft3 (audio-separator)
+#   diarizer        → diarizen (BUT-FIT/diarizen-wavlm-large-s80-md-v2)
+#   vad             → firered_vad (FireRedASR2S source checkout)
+#   scorer          → dnsmos (onnxruntime-gpu)
+#   lid             → firered_lid (FireRedASR2S, same clone)
+#   exporter        → soundfile
+#
+# Phase 2 (transcribe.py, Qwen3-ASR via vLLM) lives in a *separate* env.
+# This file deliberately does NOT include vllm / qwen-asr / whisperx —
+# they're not needed for Phase 1 and they fight DiariZen's pyannote-fork
+# over torch / transformers pins.
+#
+# Order matters: do NOT run plain ``pip install -r``. Use setup_phase1.sh,
+# which sequences the installs and applies post-install patches (DiariZen
+# vendored pyannote fork, np.NaN sed for numpy 2.x compat, onnxruntime-gpu
+# reinstall last).
+
+# --- core numerical stack -------------------------------------------------
+# numpy is unpinned: audio-separator 0.44.x requires numpy>=2, and the
+# vendored pyannote-audio fork's np.NaN/np.NAN usages are handled by the
+# sed patch in setup_phase1.sh that fires when numpy>=2 is installed.
+numpy>=2.0
+scipy
+pandas
+
+# --- torch (CUDA 12.4 wheels) ---------------------------------------------
+torch==2.5.1
+torchaudio==2.5.1
+torchvision==0.20.1
+
+# --- audio io + processing ------------------------------------------------
+librosa
+soundfile==0.13.1
+pydub==0.25.1
+tqdm
+pydantic>=2.0
+toml                              # DiariZen forgot to declare this
+
+# --- separator / Kim FT3 --------------------------------------------------
+# audio-separator 0.44.x requires Python >=3.10. setup_phase1.sh enforces this.
+audio-separator==0.44.2
+
+# --- diarizer / DiariZen --------------------------------------------------
+# DiariZen package itself comes from git; setup_phase1.sh installs it.
+#
+# Install stock pyannote.audio HERE so its full dep tree
+# (lightning / pyannote.core / pyannote.database / pyannote.metrics /
+# pyannote.pipeline / speechbrain / tensorboardX / omegaconf / ...)
+# lands in the env. setup_phase1.sh then uninstalls stock pyannote.audio
+# and installs the DiariZen fork via --no-deps; the fork's siblings
+# stay put because they're already satisfied.
+pyannote.audio==3.1.1
+
+# DiariZen's own pyproject declares NO runtime deps. These come in via
+# what its module-level imports actually use:
+accelerate
+psutil
+kaldiio
+# transformers used to come in via whisperx/vllm; needed at runtime by
+# DiariZen's WavLM and FireRedASR2S's conformer/wavlm encoders.
+transformers
+
+# --- VAD + LID / FireRedASR2S ---------------------------------------------
+# FireRedASR2S is NOT installed via pip — its official pyproject pins
+# torch 2.10 / transformers 5.1 that don't match this env. setup_phase1.sh
+# clones it to third_party/FireRedASR2S and the adapters sys.path-prepend it at
+# warmup. The runtime deps it needs (kaldi_native_fbank, etc.) come from
+# the pip stack below.
+kaldi_native_fbank
+
+# --- scorer / DNSMOS ONNX -------------------------------------------------
+# Must be GPU build. setup_phase1.sh reinstalls this last (the pyannote-fork
+# stack pulls in CPU-only onnxruntime as a transitive dep and silently
+# shadows the GPU build's __init__).
+onnxruntime-gpu==1.20.0
+
+# --- HF / pyannote support ------------------------------------------------
+# pyannote.audio is *not* pinned here on purpose: setup_phase1.sh installs the
+# DiariZen fork directly from third_party/DiariZen/pyannote-audio and that wins.
+huggingface-hub

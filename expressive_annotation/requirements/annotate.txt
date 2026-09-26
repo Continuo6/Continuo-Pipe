@@ -1,0 +1,23 @@
+# Environment for `continuo-annotate` (the main pass).
+#
+# The binding constraint is transformers: the vendored Vox-Profile / Voxlect code is
+# written against the 4.4x API and does not load on 5.x. That is precisely why the
+# captioning runs in a separate process.
+#
+# torch is NOT pinned here — install the build that matches your CUDA first
+# (https://pytorch.org/get-started/locally/), then this file.
+transformers>=4.40,<4.50
+librosa
+soundfile
+numpy
+scipy
+
+# volume: ITU-R BS.1770 integrated loudness
+pyloudnorm
+
+# pitch: penn (fcnf0++); downloads its own checkpoint on first use
+penn
+
+# required by the vendored Vox-Profile / Voxlect model code
+loralib==0.1.2
+speechbrain==1.0.3

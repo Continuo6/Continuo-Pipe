@@ -1,0 +1,16 @@
+# Environment for `continuo-caption` (Qwen3-Omni-Captioner).
+#
+# Single-GPU only: the MoE grouped_mm path does not shard cleanly across devices.
+transformers>=4.57
+accelerate
+librosa
+soundfile
+numpy
+
+# --- optional, and the default backend: vLLM ---
+# vLLM provides continuous batching for the large captioner. Install it for
+# batch inference; the Transformers backend remains available separately.
+#   pip install "vllm>=0.24"
+# Two things it needs from the caller:
+#   VLLM_WORKER_MULTIPROC_METHOD=spawn   (the engine core cannot fork after CUDA init)
+#   a driver-compatible CUDA runtime on LD_LIBRARY_PATH, if yours predates the build

@@ -1,0 +1,8 @@
+# Separate from data-phase1. Install a Torch wheel matching the host CUDA first.
+numpy
+soundfile
+tqdm
+pydantic>=2,<3
+orjson
+qwen-asr
+vllm

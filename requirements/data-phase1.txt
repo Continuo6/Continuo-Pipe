@@ -1,0 +1,3 @@
+# Install with data_annotation/setup_phase1.sh: it also installs the DiariZen fork
+# and repairs the ONNX CUDA provider after the other dependencies are installed.
+-r ../data_annotation/requirements-phase1.txt
